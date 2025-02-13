@@ -1,0 +1,29 @@
+commands:
+  - command: "start"
+    description: "Запускает бота и states"
+    response: "bot && states"
+
+
+  - command: "profile"
+    description: "exit from states of registration"
+    response: "cancel states to zero, exit from states"
+
+
+  - command: "lang"
+    description: "change language for user"
+    response: "change language for user"
+
+
+  - command: "change_credentials"
+    description: "show rules agreement"
+    response: "show rules"
+
+
+  - command: "registration"
+    description: "show rules agreement"
+    response: "show rules"
+
+
+  - command: "help"
+    description: "Показывает доступные команды"
+    response: "Доступные команды: /start, /help, /profile, /lang, /change_credentials, /registration"
