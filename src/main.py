@@ -1,9 +1,15 @@
-from src.app.repository.models import init_db, create_and_commit
+import asyncio
+from src.app.handlers.handlers import register_handlers
+from src.bot_instance import bot
+
+
+async def start_bot():
+    register_handlers(bot)
+    await bot.polling()
+
 
 async def main():
-    await init_db()
-    await create_and_commit()
+    await start_bot()
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
