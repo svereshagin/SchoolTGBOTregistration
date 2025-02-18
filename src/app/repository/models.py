@@ -1,6 +1,10 @@
 from sqlalchemy import BIGINT, VARCHAR, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.app.repository.database import Base
+from typing_extensions import Annotated
+from pydantic import BaseModel, StringConstraints, validator, ValidationError
+
+
 
 class Student(Base):
     telegram_id: Mapped[int] = mapped_column(BIGINT, unique=True)
@@ -21,7 +25,7 @@ class Credential(Base):
         BIGINT, ForeignKey('students.id'), unique=True, nullable=False
     )
 
-    student: Mapped['Student'] = relationship(back_populates="credentials")  # ✅ Исправлено
+    student: Mapped['Student'] = relationship(back_populates="credentials")
 
 
 class Profile(Base):
@@ -31,4 +35,6 @@ class Profile(Base):
     name: Mapped[str] = mapped_column(VARCHAR)
     language: Mapped[str] = mapped_column(VARCHAR)
 
-    student: Mapped["Student"] = relationship(back_populates="profile")  # ✅ Это было правильно
+    student: Mapped["Student"] = relationship(back_populates="profile")
+
+

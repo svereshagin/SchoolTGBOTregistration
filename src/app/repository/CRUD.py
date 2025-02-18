@@ -1,3 +1,4 @@
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from src.app.repository.models import Student, Profile, Credential
@@ -15,9 +16,9 @@ class Registration:
         else:
             raise Exception("This class is a singleton!")
 
-    @staticmethod
+    @classmethod
     @connection
-    async def register_user(telegram_id: int, name: str, language: str, username: str, password: str,
+    async def register_user(cls, telegram_id: int, name: str, language: str, username: str, password: str,
                             session: AsyncSession):
         """Добавляет нового пользователя с профилем и учетными данными в базу данных."""
 
@@ -28,7 +29,16 @@ class Registration:
         if existing_user:
             return False  # Пользователь уже существует
 
-        # Создаем модели
+        # Проверка логина и пароля
+        login_valid_res = cls.validate_login(username)
+        password_valid_res = cls.validate_password(password)
+
+        if login_valid_res is not True:
+            return {"success": False, "errors": login_valid_res}
+        if password_valid_res is not True:
+            return {"success": False, "errors": password_valid_res}
+
+        # Если проверки пройдены, создаем пользователя
         student = Student(telegram_id=telegram_id)
         credential = Credential(username=username, password=password, student=student)
         profile = Profile(name=name, language=language, student=student)
@@ -40,8 +50,7 @@ class Registration:
 
         # Коммитим изменения
         await session.commit()
-        return True  # Успешно зарегистрирован
-
+        return {"success": True}  # Успешно зарегистрирован
 
     @staticmethod
     @connection
@@ -53,9 +62,72 @@ class Registration:
         except Exception as e:
             print(e)
             return None  # Возвращаем None в случае ошибки
-    @staticmethod
+
+    @classmethod
+    def validate_login(cls, login: str):
+        errors = []
+        banned_symbols = "!@#$%^&*()-=\\/*"
+
+        if any(symbol in login for symbol in banned_symbols):
+            errors.append("Присутствует запрещённый символ")
+
+        if not 6 <= len(login) <= 32:
+            errors.append("Длина логина должна быть от 6 до 32 символов")
+
+        return errors if errors else True
+
+    @classmethod
+    def validate_password(cls, password: str):
+        errors = []
+        banned_symbols = "!@#$%^&*()-=\\/*"
+
+        if any(symbol in password for symbol in banned_symbols):
+            errors.append("Присутствует запрещённый символ")
+
+        if not 6 <= len(password) <= 32:
+            errors.append("Длина пароля должна быть от 6 до 32 символов")
+
+        return errors if errors else True
+
+
+class UserProfile:
+    @classmethod
     @connection
-    async def add_profile(telegram_id: int, session: AsyncSession, profile: Profile):
-        stmt = session.add()
+    async def get_profile(cls, user_id: int, session: AsyncSession):
+        # Находим существующего пользователя
+        existing_user = await session.scalar(
+            select(Student).where(Student.telegram_id == user_id)
+        )
+
+        if not existing_user:
+            return None  # Пользователь не существует
+
+        # Выполняем запрос с явным указанием соединений
+        result = await session.execute(
+            select(Profile, Credential)
+            .select_from(Student)
+            .join(Profile, Profile.student_id == Student.id)
+            .join(Credential, Credential.student_id == Student.id)
+            .where(Student.id == existing_user.id)
+        )
+
+        profiles_with_credentials = result.all()  # Получаем все профили и учетные данные
+
+        if not profiles_with_credentials:
+            return None  # Если профили или учетные данные не найдены
+
+        # Формируем список с данными
+        profiles = []
+        for profile, credential in profiles_with_credentials:
+            profiles.append({
+                'name': profile.name,
+                'language': profile.language,
+                'username': credential.username,
+                'password': credential.password
+            })
+
+        return profiles  # Возвращаем список профилей с учетными данными
+
 registration = Registration()
-print(registration)
+user_profile = UserProfile()
+

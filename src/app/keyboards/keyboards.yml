@@ -19,11 +19,6 @@ commands:
     response: "show rules"
 
 
-  - command: "registration"
-    description: "show rules agreement"
-    response: "show rules"
-
-
-  - command: "help"
-    description: "Показывает доступные команды"
-    response: "Доступные команды: /start, /help, /profile, /lang, /change_credentials, /registration"
+  - command: "school"
+    description: "link to the site"
+    response: "get the link"
