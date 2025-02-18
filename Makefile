@@ -66,3 +66,6 @@ stop-app:
 
 # Команда для выполнения всех действий
 all: run-app
+
+migrations:
+	sh create_migration.sh

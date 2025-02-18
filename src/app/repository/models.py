@@ -52,9 +52,6 @@ class TelegramProfile(Base):
     student: Mapped["Student"] = relationship(back_populates="telegram_profile")
 
 
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 async def create_and_commit():
     # Создаем сессию
     async with SessionLocal() as session:
