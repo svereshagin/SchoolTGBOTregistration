@@ -8,7 +8,7 @@ sys.path.insert(0, dirname(dirname(dirname(abspath(__file__)))))
 from alembic import context
 
 from src.app.repository.database import Base
-from src.app.repository.models import Student, User_credentials, TelegramProfile
+from src.app.repository.models import Student, Credential, Profile
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 from src.configs.config import settings
